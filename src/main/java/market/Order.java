@@ -66,6 +66,14 @@ public class Order {
         return getCustomer().getName();
     }
 
+    public double totaleOrdine() {
+        double totale = 0;
+        for (int i = 0; i < product.size(); i++) {
+            totale += product.get(i).getPrice();
+        }
+        return totale;
+    }
+
 
     //to string
 

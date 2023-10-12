@@ -111,8 +111,15 @@ public class Application {
         System.out.println("**************************************esercizio 1***************************************");
 
         Map<String, List<Order>> ordiniInordine = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName));
-        System.out.println(ordiniInordine);
+        ordiniInordine.forEach((s, orders) -> System.out.println(s + " " + orders));
+        System.out.println("**************************************esercizio 2***************************************");
 
+        List<Double> ordiniConPrezziUnici = new ArrayList<>();
+
+        Map<String, Double> utili = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName, Collectors.averagingDouble(Order::totaleOrdine)));
+
+        utili.forEach((client, total) -> System.out.println(client + " " + total));
+        System.out.println("**************************************esercizio 3***************************************");
 
     }
 }
