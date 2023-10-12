@@ -84,22 +84,17 @@ public class Application {
         }
 
 
-        List<Product> cart1 = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            cart1.add(catalogo.get(rnd.nextInt(0, 19)));
-        }
-        List<Product> cart2 = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            cart2.add(catalogo.get(rnd.nextInt(0, 19)));
-        }
-        List<Product> cart3 = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            cart3.add(catalogo.get(rnd.nextInt(0, 19)));
-        }
+        Supplier<List<Product>> cart = () -> {
+            List<Product> cartEnd = new ArrayList<>();
+            for (int i = 0; i < 4; i++) {
+                cartEnd.add(catalogo.get(rnd.nextInt(0, 19)));
+            }
+            return cartEnd;
+        };
 
 
         Supplier<Order> ordiniSupplier = () -> {
-            return new Order(date, date1, cart1, clienti.get(rnd.nextInt(0, 9)));
+            return new Order(date, date1, cart.get(), clienti.get(rnd.nextInt(0, 9)));
         };
 
         List<Order> ordini = new ArrayList<>();
@@ -116,10 +111,21 @@ public class Application {
 
         List<Double> ordiniConPrezziUnici = new ArrayList<>();
 
-        Map<String, Double> utili = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName, Collectors.averagingDouble(Order::totaleOrdine)));
+        Map<String, Double> utili = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName, Collectors.summingDouble(Order -> Order.getProduct().stream().mapToDouble(Product::getPrice).sum() * 100 / 100)));
 
-        utili.forEach((client, total) -> System.out.println(client + " " + total));
+        utili.forEach((client, total) -> System.out.println("cliente : " + client + " totale : " + total));
         System.out.println("**************************************esercizio 3***************************************");
+
+        Map<String, Double> piuCostosi = catalogo.stream().sorted(Comparator.comparing(Product::getPrice, Comparator.reverseOrder())).limit(5).collect(Collectors.groupingBy(Product::getName, Collectors.averagingDouble(Product::getPrice)));
+        piuCostosi.forEach((client, total) -> System.out.println(client + " costo : " + total));
+
+
+        System.out.println("**************************************esercizio 4***************************************");
+
+
+        double mediaUtili = ordini.stream().mapToDouble(Order::totaleOrdine).average().orElse(0.0);
+        System.out.println(mediaUtili);
+
 
     }
 }
