@@ -4,7 +4,11 @@ import com.github.javafaker.Faker;
 import market.Customer;
 import market.Order;
 import market.Product;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -65,16 +69,17 @@ public class Application {
 
         Faker faker = new Faker(Locale.ITALIAN);
         Random rnd = new Random();
+        String[] cat = {"book", "boys", "baby"};
 
         Supplier<Product> catalogoSupplier = () -> {
-            return new Product(faker.name().title(), "book", rnd.nextDouble(1, 100));
+            return new Product(faker.name().title(), cat[rnd.nextInt(0, 3)], rnd.nextDouble(1, 100));
         };
         Supplier<Customer> clientiSupplier = () -> {
-            return new Customer(faker.name().firstName(), rnd.nextInt(1, 5));
+            return new Customer(faker.name().firstName(), rnd.nextInt(0, 6));
         };
 
         List<Product> catalogo = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 40; i++) {
             catalogo.add(catalogoSupplier.get());
         }
 
@@ -108,11 +113,7 @@ public class Application {
         Map<String, List<Order>> ordiniInordine = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName));
         ordiniInordine.forEach((s, orders) -> System.out.println(s + " " + orders));
         System.out.println("**************************************esercizio 2***************************************");
-
-        List<Double> ordiniConPrezziUnici = new ArrayList<>();
-
         Map<String, Double> utili = ordini.stream().collect(Collectors.groupingBy(Order::getCustomerName, Collectors.summingDouble(Order -> Order.getProduct().stream().mapToDouble(Product::getPrice).sum() * 100 / 100)));
-
         utili.forEach((client, total) -> System.out.println("cliente : " + client + " totale : " + total));
         System.out.println("**************************************esercizio 3***************************************");
 
@@ -121,11 +122,52 @@ public class Application {
 
 
         System.out.println("**************************************esercizio 4***************************************");
-
-
         double mediaUtili = ordini.stream().mapToDouble(Order::totaleOrdine).average().orElse(0.0);
         System.out.println(mediaUtili);
+        System.out.println("**************************************esercizio 5***************************************");
 
+        double utiliBooks = catalogo.stream().filter(Product -> Objects.equals(Product.getCategory(), "book")).mapToDouble(Product::getPrice).sum();
+        double utiliBaby = catalogo.stream().filter(Product -> Objects.equals(Product.getCategory(), "baby")).mapToDouble(Product::getPrice).sum();
+        double utiliBoys = catalogo.stream().filter(Product -> Objects.equals(Product.getCategory(), "boys")).mapToDouble(Product::getPrice).sum();
 
+        System.out.println("libri : " + utiliBooks);
+        System.out.println("baby : " + utiliBaby);
+        System.out.println("boys : " + utiliBoys);
+
+        System.out.println("**************************************esercizio 6***************************************");
+
+        File file = new File("src/output.txt");
+
+        StringBuilder catalogoCompleto = new StringBuilder();
+        for (int i = 0; i < catalogo.size(); i++) {
+            catalogoCompleto.append(catalogo.get(i).toString()).append(System.getProperty("line.separator"));
+        }
+        try {
+            FileUtils.writeStringToFile(file, catalogoCompleto + System.lineSeparator(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+        System.out.println("**************************************esercizio 7***************************************");
+
+        try {
+            String[] contenuto = FileUtils.readFileToString(file, StandardCharsets.UTF_8).split("/n");
+            List<Product> nuovoContenuto = new ArrayList<>();
+//            for (int i = 0; i < contenuto.length; i++) {
+//                String[] txtToProd = contenuto[i].split("'");
+//                String[] priceInArr = txtToProd[8].split("=");
+//                String[] priceInArr2 = priceInArr[1].split(" ");
+//                double priceInDouble = Double.parseDouble(priceInArr2[0]);
+//                System.out.println(priceInArr);
+//                nuovoContenuto.add(new Product(txtToProd[4], txtToProd[6], rnd.nextDouble()));
+//            }
+
+            System.out.println(nuovoContenuto);
+
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
     }
+
+
 }
